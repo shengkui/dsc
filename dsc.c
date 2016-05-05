@@ -150,11 +150,22 @@ dsc_server_t *server_init(request_handler_t req_handler, int port)
         return NULL;
     }
 
+    struct timeval tv;
+    tv.tv_sec = 2;
+    tv.tv_usec = 0;
+    if (setsockopt(s->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
+        perror("Set recv timeout error");
+        close(s->sockfd);
+        free(s);
+        return NULL;
+    }
+
     /* Avoid "Address already in use" error in bind() */
     int val = 1;
     if (setsockopt(s->sockfd, SOL_SOCKET, SO_REUSEADDR, &val,
         sizeof(val)) == -1) {
         perror("setsockopt error");
+        close(s->sockfd);
         free(s);
         return NULL;
     }
@@ -203,7 +214,7 @@ int server_accept_request(dsc_server_t *s)
     req_len = recvfrom(s->sockfd, &buf, sizeof(buf), 0,
         (struct sockaddr *)&client_addr, &client_addrlen);
     if (req_len < 0) {
-        perror("recvform error");
+        //perror("recvform error");
         return -1;
     } else if (req_len == 0) {
         return -1;
