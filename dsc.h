@@ -85,7 +85,7 @@ typedef struct dsc_server {
 } dsc_server_t;
 
 
-dsc_server_t *server_init(request_handler_t req_handler, int port);
+dsc_server_t *server_init(request_handler_t req_handler, int port, int timeout);
 int server_accept_request(dsc_server_t *s);
 void server_close(dsc_server_t *s);
 

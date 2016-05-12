@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
     }
 
     printf("Server listening on port %d\n", serv_port);
-    s = server_init(&my_request_handler, serv_port);
+    s = server_init(&my_request_handler, serv_port, 2);
     if (s == NULL) {
         printf("Error: server init error\n");
         return STATUS_INIT_ERROR;

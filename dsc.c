@@ -115,11 +115,13 @@ static int verify_command_packet(void *buf, size_t len)
  * PARAMETERS:
  *      req_handler - The function pointer of a user-defined request handler.
  *      port        - The port number of server
+ *      timeout     - Timeout value(seconds) of recvfrom operation while waiting
+ *                    for request from client.
  *
  * RETURN:
  *      A pointer of server info.
  ******************************************************************************/
-dsc_server_t *server_init(request_handler_t req_handler, int port)
+dsc_server_t *server_init(request_handler_t req_handler, int port, int timeout)
 {
     dsc_server_t *s;
     int rc;
@@ -150,14 +152,17 @@ dsc_server_t *server_init(request_handler_t req_handler, int port)
         return NULL;
     }
 
-    struct timeval tv;
-    tv.tv_sec = 2;
-    tv.tv_usec = 0;
-    if (setsockopt(s->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
-        perror("Set recv timeout error");
-        close(s->sockfd);
-        free(s);
-        return NULL;
+    /* Set the timeout value of recvfrom operation. */
+    if (timeout >= 0) {
+        struct timeval tv;
+        tv.tv_sec = timeout;
+        tv.tv_usec = 0;
+        if (setsockopt(s->sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0) {
+            perror("Set recv timeout error");
+            close(s->sockfd);
+            free(s);
+            return NULL;
+        }
     }
 
     /* Avoid "Address already in use" error in bind() */
